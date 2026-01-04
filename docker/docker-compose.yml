@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # API Service
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: traffic_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=traffic_db
+      - DB_USER=traffic_user
+      - DB_PASSWORD=traffic_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ../data:/app/data
+      - ../config:/app/config
+      - ../logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: traffic_postgres
+    environment:
+      - POSTGRES_DB=traffic_db
+      - POSTGRES_USER=traffic_user
+      - POSTGRES_PASSWORD=traffic_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: traffic_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Apache Spark (optional, for streaming)
+  spark:
+    image: bitnami/spark:latest
+    container_name: traffic_spark
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - ../data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+

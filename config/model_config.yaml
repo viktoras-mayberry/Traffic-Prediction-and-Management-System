@@ -1,0 +1,138 @@
+# ML Model Hyperparameters Configuration
+
+# LSTM Model Configuration
+lstm:
+  sequence_length: 60  # Number of time steps to look back
+  features: 10  # Number of input features
+  hidden_units: [128, 64]  # LSTM layer sizes
+  dropout: 0.2
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 100
+  validation_split: 0.2
+  optimizer: "adam"
+  loss: "mse"
+  metrics:
+    - "mae"
+    - "rmse"
+    - "mape"
+
+# CNN-LSTM Hybrid Model Configuration
+cnn_lstm:
+  # CNN Configuration
+  cnn_filters: [64, 32]
+  cnn_kernel_size: 3
+  cnn_activation: "relu"
+  cnn_pool_size: 2
+  
+  # LSTM Configuration
+  lstm_units: [128, 64]
+  lstm_dropout: 0.3
+  lstm_recurrent_dropout: 0.2
+  
+  # Common Configuration
+  sequence_length: 60
+  spatial_features: 5  # Number of spatial features (e.g., road segments)
+  temporal_features: 10  # Number of temporal features
+  learning_rate: 0.0005
+  batch_size: 32
+  epochs: 150
+  validation_split: 0.2
+  optimizer: "adam"
+  loss: "mse"
+  metrics:
+    - "mae"
+    - "rmse"
+    - "mape"
+  
+  # Based on Agagu & Ajobiewe (2025) research
+  target_accuracy: 0.8897
+
+# Graph Neural Network Configuration
+gnn:
+  # Graph Structure
+  node_features: 8  # Features per road segment
+  edge_features: 4  # Features per road connection
+  hidden_dim: 64
+  num_layers: 3
+  num_heads: 4  # For attention-based GNN
+  dropout: 0.2
+  
+  # Training Configuration
+  learning_rate: 0.001
+  batch_size: 16
+  epochs: 200
+  validation_split: 0.2
+  optimizer: "adam"
+  loss: "mse"
+  metrics:
+    - "mae"
+    - "rmse"
+  
+  # Graph Construction
+  k_nearest_neighbors: 5  # For constructing graph from road network
+  distance_threshold: 1000  # meters
+
+# Model Selection and Ensemble
+ensemble:
+  enabled: true
+  models:
+    - "lstm"
+    - "cnn_lstm"
+    - "gnn"
+  weights:
+    lstm: 0.3
+    cnn_lstm: 0.5
+    gnn: 0.2
+  voting: "weighted_average"  # weighted_average, majority_vote
+
+# Feature Engineering
+features:
+  temporal:
+    - "hour"
+    - "day_of_week"
+    - "month"
+    - "is_weekend"
+    - "is_holiday"
+  
+  spatial:
+    - "latitude"
+    - "longitude"
+    - "road_type"
+    - "num_lanes"
+    - "speed_limit"
+  
+  traffic:
+    - "vehicle_count"
+    - "average_speed"
+    - "occupancy"
+    - "flow_rate"
+    - "density"
+  
+  weather:
+    - "temperature"
+    - "precipitation"
+    - "visibility"
+    - "wind_speed"
+
+# Data Preprocessing
+preprocessing:
+  normalization: "min_max"  # min_max, standard, robust
+  handle_missing: "interpolate"  # interpolate, forward_fill, backward_fill, drop
+  outlier_detection: true
+  outlier_method: "iqr"  # iqr, zscore
+  outlier_threshold: 3.0
+
+# Model Evaluation
+evaluation:
+  test_split: 0.2
+  cross_validation:
+    enabled: false
+    folds: 5
+  metrics:
+    - "mae"  # Mean Absolute Error
+    - "rmse"  # Root Mean Squared Error
+    - "mape"  # Mean Absolute Percentage Error
+    - "r2"  # R-squared
+    - "accuracy"  # For classification tasks
+

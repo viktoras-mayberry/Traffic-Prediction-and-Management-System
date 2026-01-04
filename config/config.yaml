@@ -1,0 +1,121 @@
+# System Configuration
+system:
+  name: "Traffic Prediction and Management System"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+
+# Data Sources Configuration
+data_sources:
+  uber_movement:
+    enabled: true
+    api_url: "https://movement.uber.com"
+    api_key: ""  # Set via environment variable UBER_MOVEMENT_API_KEY
+    data_path: "data/raw/uber_movement"
+    update_interval: 3600  # seconds
+  
+  city_apis:
+    enabled: true
+    providers:
+      nyc:
+        enabled: true
+        api_url: "https://data.cityofnewyork.us"
+        api_key: ""  # Set via environment variable NYC_API_KEY
+      la:
+        enabled: false
+        api_url: "https://data.lacity.org"
+        api_key: ""
+      chicago:
+        enabled: false
+        api_url: "https://data.cityofchicago.org"
+        api_key: ""
+  
+  sensors:
+    enabled: true
+    data_path: "data/raw/sensors"
+    update_interval: 60  # seconds
+    sensor_types:
+      - loop_detector
+      - camera
+      - radar
+  
+  gps:
+    enabled: true
+    data_path: "data/raw/gps"
+    update_interval: 30  # seconds
+
+# Spark Configuration
+spark:
+  app_name: "TrafficPredictionSystem"
+  master: "local[*]"  # Use "spark://host:port" for cluster mode
+  config:
+    spark.sql.shuffle.partitions: "200"
+    spark.streaming.batchDuration: "10"  # seconds
+    spark.sql.streaming.checkpointLocation: "data/checkpoints"
+    spark.driver.memory: "4g"
+    spark.executor.memory: "4g"
+
+# Database Configuration
+database:
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "traffic_db"
+    user: "traffic_user"
+    password: ""  # Set via environment variable DB_PASSWORD
+    pool_size: 10
+  
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: ""  # Set via environment variable REDIS_PASSWORD
+    decode_responses: true
+
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+  rate_limit:
+    enabled: true
+    requests_per_minute: 100
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/traffic_system.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# Model Configuration
+models:
+  base_path: "data/models"
+  checkpoint_interval: 100  # epochs
+  early_stopping:
+    enabled: true
+    patience: 10
+    monitor: "val_loss"
+
+# Prediction Configuration
+prediction:
+  horizon_minutes: [15, 30, 60]  # Prediction horizons
+  update_interval: 60  # seconds
+  cache_ttl: 300  # seconds
+
+# Management Configuration
+management:
+  route_optimization:
+    algorithm: "astar"  # dijkstra, astar, bellman_ford
+    consider_traffic: true
+    consider_tolls: false
+  
+  signal_control:
+    enabled: true
+    optimization_interval: 300  # seconds
+    min_green_time: 10  # seconds
+    max_green_time: 120  # seconds
+
